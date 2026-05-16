@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Truck, MapPin, Navigation } from "lucide-react";
 import logo from "@/assets/logo.png";
@@ -22,65 +22,80 @@ const features = [
   {
     icon: Truck,
     title: "Delivery Partner List",
-    description:
-      "Browse and manage all your trusted delivery partners in one place. Quickly assign parcels, view performance, and keep your fleet organized.",
+    to: "/delivery-partners" as const,
+    gradient: "from-[oklch(0.6_0.22_260)] via-[oklch(0.65_0.2_290)] to-[oklch(0.7_0.2_320)]",
   },
   {
     icon: MapPin,
     title: "Location Tracking",
-    description:
-      "Follow every parcel in real time on an interactive map. Get live ETAs, route history, and instant alerts on key delivery milestones.",
+    to: null,
+    gradient: "from-[oklch(0.65_0.2_30)] via-[oklch(0.7_0.2_50)] to-[oklch(0.75_0.18_80)]",
   },
   {
     icon: Navigation,
     title: "Update Location",
-    description:
-      "Drivers can update parcel locations on the go with one tap. Customers stay informed with accurate, up-to-the-minute delivery status.",
+    to: null,
+    gradient: "from-[oklch(0.6_0.2_180)] via-[oklch(0.65_0.2_210)] to-[oklch(0.7_0.2_240)]",
   },
 ];
 
 function Landing() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-[oklch(0.98_0.01_240)] via-background to-[oklch(0.95_0.03_250)]">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="Penny-eTracker" className="h-10 w-10" />
-          <span className="text-lg font-semibold tracking-tight">Penny-eTracker</span>
-        </Link>
-        <Button size="sm" asChild><Link to="/auth">Get Started</Link></Button>
-      </header>
+      <nav className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+          <Link to="/" className="flex items-center gap-2">
+            <img src={logo} alt="Penny-eTracker" className="h-9 w-9" />
+            <span className="text-lg font-semibold tracking-tight">Penny-eTracker</span>
+          </Link>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/landing">Home</Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/delivery-partners">Partners</Link>
+            </Button>
+            <Button size="sm" asChild>
+              <Link to="/auth">Get Started</Link>
+            </Button>
+          </div>
+        </div>
+      </nav>
 
-      <section className="mx-auto max-w-4xl px-6 pb-12 pt-8 text-center sm:pt-16">
+      <section className="mx-auto max-w-4xl px-6 pb-12 pt-12 text-center sm:pt-20">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          Track. Deliver. <span className="bg-gradient-to-r from-[oklch(0.55_0.2_260)] to-[oklch(0.7_0.2_45)] bg-clip-text text-transparent">Trust.</span>
+          Track. Deliver.{" "}
+          <span className="bg-gradient-to-r from-[oklch(0.55_0.2_260)] to-[oklch(0.7_0.2_45)] bg-clip-text text-transparent">
+            Trust.
+          </span>
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-          The complete toolkit for modern parcel tracking — manage partners, watch every move, and keep customers in the loop.
+          The complete toolkit for modern parcel tracking.
         </p>
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-6 px-6 pb-20 sm:grid-cols-2 lg:grid-cols-3">
-        {features.map(({ icon: Icon, title, description }) => {
-          const to = title === "Delivery Partner List" ? "/delivery-partners" : null;
+        {features.map(({ icon: Icon, title, to, gradient }) => {
           const card = (
-          <Card
-            key={title}
-            className={`group h-full border-border/60 transition-all hover:-translate-y-1 hover:shadow-[0_20px_40px_oklch(0.55_0.2_260/0.15)] ${to ? "cursor-pointer" : ""}`}
-          >
-            <CardHeader>
-              <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[oklch(0.55_0.2_260)] to-[oklch(0.7_0.2_45)] text-white shadow-md transition-transform group-hover:scale-110">
-                <Icon className="h-6 w-6" />
+            <Card
+              className={`group relative h-40 overflow-hidden border-0 bg-gradient-to-br ${gradient} text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-2xl ${to ? "cursor-pointer" : ""}`}
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,oklch(1_0_0/0.25),transparent_60%)]" />
+              <div className="relative flex h-full flex-col items-start justify-between p-6">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm transition-transform group-hover:scale-110">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="text-xl font-semibold tracking-tight">{title}</h3>
               </div>
-              <CardTitle className="text-xl">{title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-sm leading-relaxed">{description}</CardDescription>
-            </CardContent>
-          </Card>
+            </Card>
           );
           return to ? (
-            <Link key={title} to={to} className="block">{card}</Link>
-          ) : card;
+            <Link key={title} to={to} className="block">
+              {card}
+            </Link>
+          ) : (
+            <div key={title}>{card}</div>
+          );
         })}
       </section>
     </main>
