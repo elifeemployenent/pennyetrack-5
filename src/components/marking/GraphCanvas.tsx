@@ -39,8 +39,12 @@ export type GraphConfig = {
   srcCol: string;
   /** Target FK column on edges table */
   tgtCol: string;
-  /** Extra columns to capture when creating a node (besides name) */
-  extraField?: { key: string; label: string; required?: boolean; selectFrom?: { table: string; labelCol: string } };
+  /** Required parent FK when creating a new node (e.g. district_id for panchayath) */
+  parentRef: {
+    key: string;
+    label: string;
+    table: "districts" | "panchayaths";
+  };
   /** Extra display under node name */
   subtitle?: (node: any) => string | null;
 };
