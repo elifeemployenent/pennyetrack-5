@@ -104,6 +104,12 @@ export function GraphCanvas({ cfg }: { cfg: GraphConfig }) {
   const [search, setSearch] = useState("");
   const [dialog, setDialog] = useState<{ kind: "add" | "connect" | "create"; dir?: Direction } | null>(null);
 
+  // Reset selection when scoping filter changes
+  useEffect(() => {
+    setCenterId(null);
+    setSearch("");
+  }, [cfg.filter?.value]);
+
   // All nodes (for search and existing selection)
   const { data: allNodes = [] } = useQuery({
     queryKey: [cfg.nodesTable, "all", cfg.filter?.key, cfg.filter?.value],
