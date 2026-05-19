@@ -49,6 +49,8 @@ export type GraphConfig = {
   subtitle?: (node: any) => string | null;
   /** Optional scoping filter, e.g. only show wards belonging to a panchayath */
   filter?: { key: string; value: string } | null;
+  /** Read-only mode: hides create/add/connect actions (public viewing) */
+  readOnly?: boolean;
 };
 
 const DIRS: Direction[] = ["north", "south", "east", "west"];
