@@ -88,7 +88,7 @@ export function OfflineMap({ markers, className, emptyState }: Props) {
         });
         mapRef.current = map;
 
-        const MbtilesLayer = L.GridLayer.extend({
+        const MbtilesLayer = (L.GridLayer as any).extend({
           createTile(coords: L.Coords, done: (err: Error | null, tile: HTMLElement) => void) {
             const tile = document.createElement("img");
             tile.alt = "";
@@ -116,7 +116,7 @@ export function OfflineMap({ markers, className, emptyState }: Props) {
             return tile;
           },
         });
-        new MbtilesLayer({ minZoom: minZ, maxZoom: maxZ, tileSize: 256 }).addTo(map);
+        new (MbtilesLayer as any)({ minZoom: minZ, maxZoom: maxZ, tileSize: 256 }).addTo(map);
 
         markerLayerRef.current = L.layerGroup().addTo(map);
         setLoadState("ready");
