@@ -317,12 +317,14 @@ export function MapPicker({ kind, apiKey, parents, parentId, onParentChange, par
               }}
               onDraftDrag={(lat, lng) => setDraft({ lat, lng })}
               focus={
-                selectedId
-                  ? (() => {
-                      const p = visible.find((x) => x.id === selectedId);
-                      return p?.lat != null && p?.lng != null ? { lat: p.lat, lng: p.lng } : null;
-                    })()
-                  : null
+                draft
+                  ? { lat: draft.lat, lng: draft.lng }
+                  : selectedId
+                    ? (() => {
+                        const p = visible.find((x) => x.id === selectedId);
+                        return p?.lat != null && p?.lng != null ? { lat: p.lat, lng: p.lng } : null;
+                      })()
+                    : null
               }
             />
           ) : (
