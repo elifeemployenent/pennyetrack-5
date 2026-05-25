@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { MapPin, Locate, Save, X, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useGoogleMaps } from "./useGoogleMaps";
-import { FallbackPicker } from "./FallbackPicker";
+import { LeafletMap, type LeafletMarker } from "./LeafletMap";
 import { loadCachedPoints, saveCachedPoints, upsertCachedPoint, type GeoPoint } from "@/lib/geoCache";
 
 type Kind = "panchayath" | "ward";
@@ -223,31 +223,22 @@ export function MapPicker({ kind, apiKey, parents, parentId, onParentChange, par
     [visible, filter],
   );
 
-  if (!apiKey) {
-    return (
-      <FallbackPicker
-        kind={kind}
-        parents={parents}
-        parentId={parentId}
-        onParentChange={onParentChange}
-        parentLabel={parentLabel}
-        reason="Google Maps API key is not configured. Ask an admin to set it in Settings, or use the GPS fallback below."
-      />
-    );
-  }
+  // Fallback to Leaflet/OpenStreetMap if no Google Maps key or it failed.
+  const useLeaflet = !apiKey || mapState === "error";
 
-  if (mapState === "error") {
-    return (
-      <FallbackPicker
-        kind={kind}
-        parents={parents}
-        parentId={parentId}
-        onParentChange={onParentChange}
-        parentLabel={parentLabel}
-        reason="Google Maps failed to load (invalid key, API disabled, or network blocked). Falling back to browser GPS."
-      />
-    );
-  }
+  const leafletMarkers: LeafletMarker[] = useLeaflet
+    ? visible
+        .filter((p) => p.lat != null && p.lng != null)
+        .map((p) => ({
+          id: p.id,
+          name: p.name,
+          lat: p.lat as number,
+          lng: p.lng as number,
+          label: p.ward_number ?? null,
+        }))
+    : [];
+
+
 
   return (
     <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
@@ -312,12 +303,40 @@ export function MapPicker({ kind, apiKey, parents, parentId, onParentChange, par
 
       <Card className="relative overflow-hidden">
         <CardContent className="p-0">
-          {mapState === "loading" && (
-            <div className="flex h-[60vh] items-center justify-center text-sm text-muted-foreground">Loading map…</div>
+          {useLeaflet ? (
+            <LeafletMap
+              height="60vh"
+              markers={leafletMarkers}
+              draft={draft}
+              onPick={(lat, lng) => {
+                if (!selectedId) {
+                  toast.error(`Select a ${kind} first`);
+                  return;
+                }
+                setDraft({ lat, lng });
+              }}
+              onDraftDrag={(lat, lng) => setDraft({ lat, lng })}
+              focus={
+                draft
+                  ? { lat: draft.lat, lng: draft.lng }
+                  : selectedId
+                    ? (() => {
+                        const p = visible.find((x) => x.id === selectedId);
+                        return p?.lat != null && p?.lng != null ? { lat: p.lat, lng: p.lng } : null;
+                      })()
+                    : null
+              }
+            />
+          ) : (
+            <>
+              {mapState === "loading" && (
+                <div className="flex h-[60vh] items-center justify-center text-sm text-muted-foreground">Loading map…</div>
+              )}
+              <div ref={mapRef} className="h-[60vh] w-full" style={{ display: mapState === "ready" ? "block" : "none" }} />
+            </>
           )}
-          <div ref={mapRef} className="h-[60vh] w-full" style={{ display: mapState === "ready" ? "block" : "none" }} />
 
-          {mapState === "ready" && (
+          {(useLeaflet || mapState === "ready") && (
             <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center px-3">
               <div className="pointer-events-auto flex items-center gap-2 rounded-lg border bg-background/95 px-3 py-2 text-xs shadow-md backdrop-blur">
                 {selectedId ? (
@@ -337,8 +356,8 @@ export function MapPicker({ kind, apiKey, parents, parentId, onParentChange, par
             </div>
           )}
 
-          {mapState === "ready" && selectedId && (
-            <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
+          {(useLeaflet || mapState === "ready") && selectedId && (
+            <div className="absolute bottom-3 left-1/2 z-[500] flex -translate-x-1/2 gap-2">
               <Button size="sm" variant="secondary" onClick={useMyLocation}>
                 <Locate className="h-3.5 w-3.5" /> Use my location
               </Button>
@@ -359,3 +378,4 @@ export function MapPicker({ kind, apiKey, parents, parentId, onParentChange, par
     </div>
   );
 }
+
